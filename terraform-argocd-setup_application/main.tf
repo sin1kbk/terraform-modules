@@ -1,11 +1,24 @@
+terraform {
+  required_providers {
+    argocd = {
+      source  = "oboukili/argocd"
+      version = "4.2.0"
+    }
+    github = {
+      source  = "integrations/github"
+      version = "5.12.0"
+    }
+  }
+}
+
 resource "tls_private_key" "argocd" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
 data "github_repository" "x" {
-  for_each  = { for i in var.application_parameters : i.repository => i }
-  full_name = "${var.github_owner}/${each.value.repository}"
+  for_each = { for i in var.application_parameters : i.repository => i }
+  name     = each.value.repository
 }
 
 resource "github_repository_deploy_key" "argocd_deploy_key" {
@@ -26,6 +39,7 @@ resource "argocd_repository" "x" {
 
 # ArgoCD Application define
 locals {
+  github_owner = split("/", [for k, v in element(data.github_repository.x[*], 0) : v.full_name][0])[0]
   flatten_application_parameter = distinct(flatten([
     for application_parameter in var.application_parameters : [
       for application in application_parameter.applications : {
@@ -50,7 +64,7 @@ resource "argocd_application" "x" {
 
   spec {
     source {
-      repo_url        = "git@github.com:${var.github_owner}/${each.value.repository}"
+      repo_url        = "git@github.com:${local.github_owner}/${each.value.repository}"
       path            = each.value.path
       target_revision = "HEAD"
       helm {
