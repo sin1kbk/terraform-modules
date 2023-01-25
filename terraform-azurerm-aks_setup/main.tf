@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "3.36.0"
+    }
+  }
+}
+
 ## Setup AKS
 data "azurerm_resource_group" "x" {
   name = var.resource_group_name
@@ -34,6 +43,7 @@ resource "azurerm_kubernetes_cluster" "x" {
     vm_size         = var.vm_size
     os_disk_size_gb = var.os_disk_size_gb
     node_count      = var.node_count
+    max_pods        = var.max_pods
   }
 
   network_profile {

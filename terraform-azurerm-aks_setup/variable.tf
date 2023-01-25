@@ -21,6 +21,11 @@ variable "node_count" {
   default = 1
 }
 
+variable "max_pods" {
+  type    = string
+  default = 100
+}
+
 variable "subnet" {
   type = string
 }
