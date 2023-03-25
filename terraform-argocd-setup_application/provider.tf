@@ -11,16 +11,3 @@ terraform {
     }
   }
 }
-
-provider "argocd" {
-  server_addr = "localhost:8080"
-  username    = "admin"
-  password    = var.admin_password
-  insecure    = true
-  grpc_web    = true
-}
-
-provider "github" {
-  owner = var.github_owner
-  token = var.github_token
-}
