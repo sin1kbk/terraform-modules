@@ -101,7 +101,7 @@ jobs:
     # Generates an execution plan for Terraform
     - name: Terraform Plan
       env:
-        GITHUB_TOKEN: ${{ secrets.TF_VAR_GITHUB_PERSONAL_ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         PR_NUMBER: ${{ github.event.number }}
       run: tfcmt plan -patch -- terraform plan -no-color -input=false
