@@ -44,6 +44,13 @@
 
 name: 'Terraform'
 
+env:
+  NRIA_LICENSE_KEY: ${{secrets.NRIA_LICENSE_KEY}}
+  TFE_TOKEN: ${{secrets.TFE_TOKEN}}
+  TF_VAR_NEWRELIC_ACCOUNT_ID: ${{vars.TF_VAR_NEWRELIC_ACCOUNT_ID}}
+  TF_VAR_NEWRELIC_API_KEY: ${{secrets.TF_VAR_NEWRELIC_API_KEY}}
+  TF_VAR_NEWRELIC_AWS_ACCOUNT_ID: ${{vars.TF_VAR_NEWRELIC_AWS_ACCOUNT_ID}}
+
 on:
   push:
     branches: [ "main" ]
@@ -62,7 +69,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./terraform_test
+        working-directory: ./examples/terraform-newrelic
     steps:
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
