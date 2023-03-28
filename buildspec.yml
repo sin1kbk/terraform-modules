@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo 'Hello World (INSTALL phase)'
+  pre_build:
+    commands:
+      - echo 'Hello World (PRE_BUILD phase)'
+  build:
+    commands:
+      - echo 'Hello World (BUILD phase)'
+  post_build:
+    commands:
+      - echo 'Hello World (POST_BUILD phase)'
