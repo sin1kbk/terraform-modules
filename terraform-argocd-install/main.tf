@@ -20,7 +20,7 @@ data "kubectl_file_documents" "install_yaml" {
 }
 
 resource "kubectl_manifest" "install" {
-  depends_on         = [kubernetes_namespace.argocd]
+  depends_on = [kubernetes_namespace.argocd]
 
   for_each           = data.kubectl_file_documents.install_yaml.manifests
   yaml_body          = each.value

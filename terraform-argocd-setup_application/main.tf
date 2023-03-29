@@ -1,16 +1,3 @@
-terraform {
-  required_providers {
-    argocd = {
-      source  = "oboukili/argocd"
-      version = "4.2.0"
-    }
-    github = {
-      source  = "integrations/github"
-      version = "5.12.0"
-    }
-  }
-}
-
 resource "tls_private_key" "argocd" {
   algorithm = "RSA"
   rsa_bits  = 4096
