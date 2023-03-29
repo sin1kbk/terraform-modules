@@ -1,32 +1,3 @@
-terraform {
-  backend "local" { path = "./terraform.tfstate" }
-  required_version = ">= 1.2.0"
-}
-
-provider "kubernetes" {
-  config_path = "./.kubeconfig"
-}
-
-provider "kubectl" {
-  config_path = "./.kubeconfig"
-}
-
-provider "argocd" {
-  server_addr = "localhost:8080"
-  username    = "admin"
-  password    = "test"
-  insecure    = true
-  grpc_web    = true
-}
-
-provider "github" {
-  token = "test"
-}
-
-variable "GITHUB_TOKEN" {
-  type = string
-}
-
 #module "setup_kind" {
 #  source = "../kubernetes/setup-kind"
 #}
