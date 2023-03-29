@@ -1,0 +1,3 @@
+[submodule "terraform-newrelic"]
+	path = terraform-newrelic
+	url = https://github.com/kubokkey/terraform-newrelic
