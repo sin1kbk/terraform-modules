@@ -1,9 +1,12 @@
 name: 'Terraform'
-
+## TODO: 共通のTerraform処理はテンプレート化して、パス毎にworkflowファイルを分け、それぞれで呼び出す
 on:
+  workflow_dispatch:
   push:
     paths-ignore:
       - '**/*.md'
+    paths:
+      - 'examples/newrelic/*'
     branches: [ "main" ]
     #branches-ignore:
     #  - main
