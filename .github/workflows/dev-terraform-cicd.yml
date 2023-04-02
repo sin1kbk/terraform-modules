@@ -1,0 +1,13 @@
+name: dev-terraform-cicd
+on:
+  push:
+    branches:
+    - 'feature/**'
+    - 'bugfix/**'
+    
+jobs:
+  terraform-cicd:
+    uses: ./.github/workflows/reusable.terraform-cicd.yml
+    with:
+      environment: dev
+      is_apply: false
