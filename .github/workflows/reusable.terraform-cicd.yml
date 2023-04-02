@@ -1,0 +1,114 @@
+name: terraform-cicd
+
+on:
+  workflow_call:
+    inputs:
+      is_apply:
+        type: boolean
+        default: false
+      environment:
+        type: string
+        required: true
+        default: tst
+  workflow_dispatch:
+    inputs:
+      is_apply:
+        type: boolean
+        default: false
+      environment:
+        type: choice
+        required: true
+        default: tst
+        options:
+          - dev
+          - stg
+          - prd
+
+env:
+  aws_iam_assume_role_arn: |-
+    ${{ fromJSON('{
+      "dev": "arn:aws:iam::xxxxxxxxx:role/github-actions-dev",
+      "stg": "arn:aws:iam::xxxxxxxxx:role/github-actions-stg",
+      "prd": "arn:aws:iam::xxxxxxxxx:role/github-actions-prd"
+    }')[inputs.environment] }}
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+  
+jobs:
+  check:
+    defaults:
+      run:
+        shell: bash
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.3.9
+    - run: terraform fmt -check -recursive .
+    
+  plan:
+    needs: check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./env/${{ inputs.environment }}
+    steps:
+    - uses: actions/checkout@v3
+    - uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.3.9
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: 'ap-northeast-1'
+        role-to-assume: ${{ env.aws_iam_assume_role_arn }}
+    - run: terraform init -upgrade
+    - name: setup tfcmt
+      env:
+        TFCMT_VERSION: v4.2.0
+      run: |
+        wget "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O /tmp/tfcmt.tar.gz
+        tar xzf /tmp/tfcmt.tar.gz -C /tmp
+        mv /tmp/tfcmt /usr/local/bin
+        tfcmt --version
+    - run: tfcmt -var target:${{ inputs.environment }} plan -patch -- terraform plan -no-color -lock=false -var 'profile='
+      env:
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_NUMBER: ${{ github.event.number }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  apply:
+    if: ${{ inputs.is_apply == 'true' }}
+    needs: plan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./env/${{ inputs.environment }}
+    steps:
+    - uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: 'ap-northeast-1'
+        role-to-assume: ${{ env.aws_iam_assume_role_arn }}
+    - run: terraform init -upgrade     
+    - name: setup tfcmt
+      env:
+        TFCMT_VERSION: v4.2.0
+      run: |
+        wget "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O /tmp/tfcmt.tar.gz
+        tar xzf /tmp/tfcmt.tar.gz -C /tmp
+        mv /tmp/tfcmt /usr/local/bin
+        tfcmt --version
+    - run: tfcmt -var target:${{ inputs.environment }} apply -patch -- terraform apply -auto-approve -input=false -var 'profile='
+      env:
+        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_NUMBER: ${{ github.event.number }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
