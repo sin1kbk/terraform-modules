@@ -10,6 +10,9 @@ on:
         type: string
         required: true
         default: dev
+    secrets:
+      TF_API_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       is_apply:
