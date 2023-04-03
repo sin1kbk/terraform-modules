@@ -10,5 +10,6 @@ jobs:
     uses: ./.github/workflows/reusable.terraform-cicd.yml
     secrets: inherit
     with:
+      varFilePath: ./.github/variables/newrelic.env
       environment: dev
       is_apply: false
