@@ -8,6 +8,7 @@ on:
 jobs:
   terraform-cicd:
     uses: ./.github/workflows/reusable.terraform-cicd.yml
+    secrets: inherit
     with:
       environment: dev
       is_apply: false
