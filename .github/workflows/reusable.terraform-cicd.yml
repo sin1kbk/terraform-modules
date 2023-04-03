@@ -62,8 +62,6 @@ jobs:
         tfcmt --version
     - run: tfcmt plan -patch -- terraform plan -no-color -lock=false -var 'profile='
       env:
-        PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        PR_NUMBER: ${{ github.event.number }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   apply:
