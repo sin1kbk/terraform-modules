@@ -60,7 +60,7 @@ jobs:
         tar xzf /tmp/tfcmt.tar.gz -C /tmp
         mv /tmp/tfcmt /usr/local/bin
         tfcmt --version
-    - run: tfcmt -var target:${{ inputs.environment }} plan -patch -- terraform plan
+    - run: tfcmt -var target:${{ inputs.environment }} plan -patch -- terraform plan -no-color -lock=false -input=false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
