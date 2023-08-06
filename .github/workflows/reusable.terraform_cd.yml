@@ -1,5 +1,5 @@
 name: terraform_cd
-run-name: ${{ github.ref_name }} terraform_cd ${{ inputs.exec_mode }} on ${{ inputs.environment }} by @${{ github.actor }}
+run-name: "terraform_cd ${{ inputs.exec_mode }} on ${{ inputs.environment }} by @${{ github.actor }} : ${{ github.ref_name }} ${{ github.sha }}"
 
 on:
   workflow_call:
