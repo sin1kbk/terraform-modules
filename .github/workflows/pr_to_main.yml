@@ -1,0 +1,29 @@
+name: pr_to_main
+
+on:
+  pull_request:
+    branches:
+    - 'main'
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  ci:
+    uses: ./.github/workflows/reusable.terraform_ci.yml
+    secrets: inherit
+
+  tf_plan:
+    needs: ci
+    strategy:
+      matrix:
+        env:
+          - newrelic
+    uses: ./.github/workflows/reusable.terraform_cd.yml
+    secrets: inherit
+    with:
+      environment: ${{ matrix.env }}
+      exec_mode: plan
+      

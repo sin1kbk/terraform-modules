@@ -1,0 +1,91 @@
+name: terraform_cd
+run-name: ${{ github.ref_name }} terraform_cd ${{ inputs.exec_mode }} on ${{ inputs.environment }} by @${{ github.actor }}
+
+on:
+  workflow_call:
+    inputs:
+      exec_mode:
+        type: string
+        default: plan
+      environment:
+        type: string
+        required: true
+        default: newrelic
+  workflow_dispatch:
+    inputs:
+      exec_mode:
+        type: choice
+        default: plan
+        options:
+          - plan
+          - apply
+      environment:
+        type: choice
+        required: true
+        default: newrelic
+        options:
+          - newrelic
+          - aws
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}
+  cancel-in-progress: true
+
+env:
+  TF_VERSION: 1.4.4
+  TF_DIR: examples
+  TFCMT_VERSION: v4.2.0
+  AWS_REGION: ap-northeast-1
+  AWS_IAM_ASSUME_ROLE_ARN: |-
+    ${{ fromJSON('{
+      "newrelic": "arn:aws:iam::xxxxxx:role/sample",
+      "aws": "arn:aws:iam::xxxxxxxx:role/sample"
+    }')[inputs.environment] }}
+
+jobs:
+  plan_or_apply:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./${{ env.TF_DIR }}/${{ inputs.environment }}
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Setup TFCmt
+      run: |
+        wget "https://github.com/suzuki-shunsuke/tfcmt/releases/download/${TFCMT_VERSION}/tfcmt_linux_amd64.tar.gz" -O /tmp/tfcmt.tar.gz
+        tar xzf /tmp/tfcmt.tar.gz -C /tmp
+        mv /tmp/tfcmt /usr/local/bin
+        tfcmt --version
+
+    - name: AWS OIDC Authorization
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: ${{ env.AWS_IAM_ASSUME_ROLE_ARN }}
+
+    - name: Terraform Init
+      run: terraform init    
+
+    - name: Terraform Plan
+      if: ${{ inputs.exec_mode == 'plan' }}
+      run: tfcmt -var target:${{ inputs.environment }} plan -patch -- terraform plan -no-color -lock=false -input=false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Terraform Apply
+      if: ${{ inputs.exec_mode == 'apply' }}
+      run: tfcmt -var target:${{ inputs.environment }} apply -- terraform apply -auto-approve -lock=true -input=false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
