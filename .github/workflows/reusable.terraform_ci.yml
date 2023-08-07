@@ -34,6 +34,7 @@ jobs:
         uses: aquasecurity/tfsec-pr-commenter-action@main
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          working_directory: examples/aws
 
       ## TFLint
       - uses: actions/cache@v3
